@@ -1,0 +1,6 @@
+bin/
+paket-files/
+.paket/
+**/obj/
+**/.DS_Store
+.idea/

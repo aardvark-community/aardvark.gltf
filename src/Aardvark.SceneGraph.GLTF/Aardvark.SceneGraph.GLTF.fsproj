@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputPath>..\..\bin\$(Configuration)</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+	<EmbeddedResource Include="CubeMap\miramar_bk.png" />
+	<EmbeddedResource Include="CubeMap\miramar_dn.png" />
+	<EmbeddedResource Include="CubeMap\miramar_ft.png" />
+	<EmbeddedResource Include="CubeMap\miramar_lf.png" />
+	<EmbeddedResource Include="CubeMap\miramar_rt.png" />
+	<EmbeddedResource Include="CubeMap\miramar_up.png" />
+	<EmbeddedResource Include="CubeMap\chapel_bk.png" />
+	<EmbeddedResource Include="CubeMap\chapel_dn.png" />
+	<EmbeddedResource Include="CubeMap\chapel_ft.png" />
+	<EmbeddedResource Include="CubeMap\chapel_lf.png" />
+	<EmbeddedResource Include="CubeMap\chapel_rt.png" />
+	<EmbeddedResource Include="CubeMap\chapel_up.png" />
+    <Compile Include="CubeMap.fs" />
+    <Compile Include="SceneGraph.fs" />
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Aardvark.GLTF\Aardvark.GLTF.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
