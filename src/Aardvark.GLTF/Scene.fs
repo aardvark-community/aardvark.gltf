@@ -31,6 +31,7 @@ type MeshId private (value : int) =
     override x.ToString() = string value
     member private x.AsString = x.ToString()
         
+/// A union-type for the different types of textures
 type TextureSemantic =
     | BaseColor
     | Roughness
@@ -38,6 +39,7 @@ type TextureSemantic =
     | Normal
     | Emissive
 
+/// A simple PBR material reprensentation
 type Material =
     {
         Name                            : option<string>
@@ -63,6 +65,7 @@ type Material =
         NormalTextureScale              : float
     }
 
+/// Mesh representation
 [<CustomEquality; NoComparison>]
 type Mesh =
     {

@@ -580,130 +580,137 @@ module GLTF =
             if r = 0 then v
             else 8 + (v - r)
         
+        let bufferCache = Dict<System.Array * bool, int * int * int>()
+        let accessorCache = Dict<System.Array * bool, int>()
+        
         let inline getBuffer (element : bool) (data : 'a[]) =
-            if element then
-                let arrayData = ()
-                let arrayLength = ()
-                use ptr = fixed data
-                let src = System.Span<byte>(NativePtr.toVoidPtr ptr, data.Length * sizeof<'a>)
-                
-                let offset = align8 elementLength
-                
-                if offset + src.Length > elementData.Length then
-                    System.Array.Resize(&elementData, Fun.NextPowerOfTwo(offset + src.Length))
-                
-                let dst = System.Span<byte>(elementData, offset, src.Length)
-                src.CopyTo dst
-                elementLength <- offset + src.Length
-                1, offset, src.Length
-            else
-                let elementData = ()
-                let elementLength = ()
-                use ptr = fixed data
-                let src = System.Span<byte>(NativePtr.toVoidPtr ptr, data.Length * sizeof<'a>)
-                
-                let offset = align8 arrayLength
-                
-                if offset + src.Length > arrayData.Length then
-                    System.Array.Resize(&arrayData, Fun.NextPowerOfTwo(offset + src.Length))
+            bufferCache.GetOrCreate((data, element), fun _ ->
+                if element then
+                    let arrayData = ()
+                    let arrayLength = ()
+                    use ptr = fixed data
+                    let src = System.Span<byte>(NativePtr.toVoidPtr ptr, data.Length * sizeof<'a>)
                     
-                let dst = System.Span<byte>(arrayData, offset, src.Length)
-                src.CopyTo dst
-                arrayLength <- offset + src.Length
-                0, offset, src.Length
+                    let offset = align8 elementLength
+                    
+                    if offset + src.Length > elementData.Length then
+                        System.Array.Resize(&elementData, Fun.NextPowerOfTwo(offset + src.Length))
+                    
+                    let dst = System.Span<byte>(elementData, offset, src.Length)
+                    src.CopyTo dst
+                    elementLength <- offset + src.Length
+                    1, offset, src.Length
+                else
+                    let elementData = ()
+                    let elementLength = ()
+                    use ptr = fixed data
+                    let src = System.Span<byte>(NativePtr.toVoidPtr ptr, data.Length * sizeof<'a>)
+                    
+                    let offset = align8 arrayLength
+                    
+                    if offset + src.Length > arrayData.Length then
+                        System.Array.Resize(&arrayData, Fun.NextPowerOfTwo(offset + src.Length))
+                        
+                    let dst = System.Span<byte>(arrayData, offset, src.Length)
+                    src.CopyTo dst
+                    arrayLength <- offset + src.Length
+                    0, offset, src.Length
+            )
             
         let inline getAccessor (element : bool) (data : 'a[]) =
-            let t = typeof<'a>
-            let view = glTFLoader.Schema.BufferView()
-            
-            let bid, offset, size = getBuffer element data
-            
-            view.Buffer <- bid
-            view.ByteOffset <- offset
-            view.ByteLength <- size
-            view.Target <- if element then BufferView.TargetEnum.ELEMENT_ARRAY_BUFFER else BufferView.TargetEnum.ARRAY_BUFFER
-            let vid = bufferViews.Count
-            bufferViews.Add view
-            
-            let acc = Accessor()
-            acc.BufferView <- System.Nullable vid
-            acc.Count <- data.Length
-            acc.ByteOffset <- 0
-            acc.Normalized <-
-                t = typeof<C3b> || t = typeof<C4b> ||
-                t = typeof<C3us> || t = typeof<C4us> ||
-                t = typeof<C3ui> || t = typeof<C4ui>
-            match data :> obj with
-            | :? array<V3f> as data ->
-                let bounds = Box3f data
-                acc.Min <- bounds.Min.ToArray()
-                acc.Max <- bounds.Max.ToArray()
-            | _ ->
-                ()
-            acc.ComponentType <-
-                if t = typeof<float32> then Accessor.ComponentTypeEnum.FLOAT
-                elif t = typeof<int8> then Accessor.ComponentTypeEnum.BYTE
-                elif t = typeof<uint8> then Accessor.ComponentTypeEnum.UNSIGNED_BYTE
-                elif t = typeof<int16> then Accessor.ComponentTypeEnum.SHORT
-                elif t = typeof<uint16> then Accessor.ComponentTypeEnum.UNSIGNED_SHORT
-                elif t = typeof<int> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<uint32> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+            accessorCache.GetOrCreate((data, element), fun _ ->
+                let t = typeof<'a>
+                let view = glTFLoader.Schema.BufferView()
                 
-                elif t = typeof<V2f> then Accessor.ComponentTypeEnum.FLOAT
-                elif t = typeof<V2i> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<V2ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                let bid, offset, size = getBuffer element data
                 
-                elif t = typeof<V3f> then Accessor.ComponentTypeEnum.FLOAT
-                elif t = typeof<V3i> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<V3ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<C3b> then Accessor.ComponentTypeEnum.UNSIGNED_BYTE
-                elif t = typeof<C3us> then Accessor.ComponentTypeEnum.UNSIGNED_SHORT
-                elif t = typeof<C3ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<C3f> then Accessor.ComponentTypeEnum.FLOAT
+                view.Buffer <- bid
+                view.ByteOffset <- offset
+                view.ByteLength <- size
+                view.Target <- if element then BufferView.TargetEnum.ELEMENT_ARRAY_BUFFER else BufferView.TargetEnum.ARRAY_BUFFER
+                let vid = bufferViews.Count
+                bufferViews.Add view
                 
-                elif t = typeof<V4f> then Accessor.ComponentTypeEnum.FLOAT
-                elif t = typeof<V4i> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<V4ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<C4b> then Accessor.ComponentTypeEnum.UNSIGNED_BYTE
-                elif t = typeof<C4us> then Accessor.ComponentTypeEnum.UNSIGNED_SHORT
-                elif t = typeof<C4ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
-                elif t = typeof<C4f> then Accessor.ComponentTypeEnum.FLOAT
+                let acc = Accessor()
+                acc.BufferView <- System.Nullable vid
+                acc.Count <- data.Length
+                acc.ByteOffset <- 0
+                acc.Normalized <-
+                    t = typeof<C3b> || t = typeof<C4b> ||
+                    t = typeof<C3us> || t = typeof<C4us> ||
+                    t = typeof<C3ui> || t = typeof<C4ui>
+                match data :> obj with
+                | :? array<V3f> as data ->
+                    let bounds = Box3f data
+                    acc.Min <- bounds.Min.ToArray()
+                    acc.Max <- bounds.Max.ToArray()
+                | _ ->
+                    ()
+                acc.ComponentType <-
+                    if t = typeof<float32> then Accessor.ComponentTypeEnum.FLOAT
+                    elif t = typeof<int8> then Accessor.ComponentTypeEnum.BYTE
+                    elif t = typeof<uint8> then Accessor.ComponentTypeEnum.UNSIGNED_BYTE
+                    elif t = typeof<int16> then Accessor.ComponentTypeEnum.SHORT
+                    elif t = typeof<uint16> then Accessor.ComponentTypeEnum.UNSIGNED_SHORT
+                    elif t = typeof<int> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<uint32> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    
+                    elif t = typeof<V2f> then Accessor.ComponentTypeEnum.FLOAT
+                    elif t = typeof<V2i> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<V2ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    
+                    elif t = typeof<V3f> then Accessor.ComponentTypeEnum.FLOAT
+                    elif t = typeof<V3i> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<V3ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<C3b> then Accessor.ComponentTypeEnum.UNSIGNED_BYTE
+                    elif t = typeof<C3us> then Accessor.ComponentTypeEnum.UNSIGNED_SHORT
+                    elif t = typeof<C3ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<C3f> then Accessor.ComponentTypeEnum.FLOAT
+                    
+                    elif t = typeof<V4f> then Accessor.ComponentTypeEnum.FLOAT
+                    elif t = typeof<V4i> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<V4ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<C4b> then Accessor.ComponentTypeEnum.UNSIGNED_BYTE
+                    elif t = typeof<C4us> then Accessor.ComponentTypeEnum.UNSIGNED_SHORT
+                    elif t = typeof<C4ui> then Accessor.ComponentTypeEnum.UNSIGNED_INT
+                    elif t = typeof<C4f> then Accessor.ComponentTypeEnum.FLOAT
+                    
+                    else failwithf "Unsupported type: %A" t
+                acc.Type <-
+                    if t = typeof<float32> then Accessor.TypeEnum.SCALAR
+                    elif t = typeof<int8> then Accessor.TypeEnum.SCALAR
+                    elif t = typeof<uint8> then Accessor.TypeEnum.SCALAR
+                    elif t = typeof<int16> then Accessor.TypeEnum.SCALAR
+                    elif t = typeof<uint16> then Accessor.TypeEnum.SCALAR
+                    elif t = typeof<int> then Accessor.TypeEnum.SCALAR
+                    elif t = typeof<uint32> then Accessor.TypeEnum.SCALAR
+                    
+                    elif t = typeof<V2f> then Accessor.TypeEnum.VEC2
+                    elif t = typeof<V2i> then Accessor.TypeEnum.VEC2
+                    elif t = typeof<V2ui> then Accessor.TypeEnum.VEC2
+                    
+                    elif t = typeof<V3f> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<V3i> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<V3ui> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C3b> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C3us> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C3ui> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C3f> then Accessor.TypeEnum.VEC3
+                    
+                    elif t = typeof<V4f> then Accessor.TypeEnum.VEC4
+                    elif t = typeof<V4i> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<V4ui> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C4b> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C4us> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C4ui> then Accessor.TypeEnum.VEC3
+                    elif t = typeof<C4f> then Accessor.TypeEnum.VEC3
+                    
+                    else failwithf "Unsupported type: %A" t
                 
-                else failwithf "Unsupported type: %A" t
-            acc.Type <-
-                if t = typeof<float32> then Accessor.TypeEnum.SCALAR
-                elif t = typeof<int8> then Accessor.TypeEnum.SCALAR
-                elif t = typeof<uint8> then Accessor.TypeEnum.SCALAR
-                elif t = typeof<int16> then Accessor.TypeEnum.SCALAR
-                elif t = typeof<uint16> then Accessor.TypeEnum.SCALAR
-                elif t = typeof<int> then Accessor.TypeEnum.SCALAR
-                elif t = typeof<uint32> then Accessor.TypeEnum.SCALAR
-                
-                elif t = typeof<V2f> then Accessor.TypeEnum.VEC2
-                elif t = typeof<V2i> then Accessor.TypeEnum.VEC2
-                elif t = typeof<V2ui> then Accessor.TypeEnum.VEC2
-                
-                elif t = typeof<V3f> then Accessor.TypeEnum.VEC3
-                elif t = typeof<V3i> then Accessor.TypeEnum.VEC3
-                elif t = typeof<V3ui> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C3b> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C3us> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C3ui> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C3f> then Accessor.TypeEnum.VEC3
-                
-                elif t = typeof<V4f> then Accessor.TypeEnum.VEC4
-                elif t = typeof<V4i> then Accessor.TypeEnum.VEC3
-                elif t = typeof<V4ui> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C4b> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C4us> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C4ui> then Accessor.TypeEnum.VEC3
-                elif t = typeof<C4f> then Accessor.TypeEnum.VEC3
-                
-                else failwithf "Unsupported type: %A" t
-            
-            let id = accessors.Count
-            accessors.Add acc
-            id
+                let id = accessors.Count
+                accessors.Add acc
+                id
+            )
         
         let getMaterial (sems : list<'a * HashSet<TextureSemantic>>) (id : MaterialId)  =
             let key = (id, sems |> List.map snd)
@@ -791,6 +798,8 @@ module GLTF =
                 let matIndex = instance.Material |> Option.bind (getMaterial mesh.TexCoords)
                 
                 let res = glTFLoader.Schema.MeshPrimitive()
+  
+                
                 match mesh.Index with
                 | Some idx -> res.Indices <- System.Nullable (getAccessor true idx)
                 | None -> ()
