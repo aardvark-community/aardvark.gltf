@@ -5,3 +5,12 @@ Aardvark.Rendering
 FSharp.Data.Adaptive
 Aardvark.Application.Utilities
 glTF2Loader
+
+
+FsUnit
+FsCheck
+FsCheck.NUnit
+Microsoft.NET.Test.Sdk
+NUnit
+NUnit3TestAdapter
+BenchmarkDotNet

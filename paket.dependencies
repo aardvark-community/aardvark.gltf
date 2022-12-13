@@ -14,3 +14,12 @@ nuget Aardvark.Base.Tensors              ~> 5.2.18
 nuget Aardvark.Rendering                 ~> 5.3.3
 nuget Aardvark.Application.Utilities     ~> 5.3.3
 nuget glTF2Loader                        ~> 1.1.4-alpha
+
+
+nuget FsUnit                                ~> 3.4.1
+nuget FsCheck                               ~> 2.14.0
+nuget FsCheck.NUnit                         ~> 2.14.0
+nuget Microsoft.NET.Test.Sdk                ~> 16.4.0
+nuget NUnit                                 ~> 3.12.0
+nuget NUnit3TestAdapter                     ~> 3.15.1
+nuget BenchmarkDotNet                       ~> 0.12.0

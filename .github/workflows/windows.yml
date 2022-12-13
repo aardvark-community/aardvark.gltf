@@ -1,0 +1,19 @@
+name: Publish
+on: push
+jobs:
+  pack:
+    name: Test
+    runs-on: windows-latest
+    steps:  
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install Dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.100'
+      - name: Restore Tools
+        run: dotnet tool restore
+      - name: Restore
+        run: dotnet paket restore
+      - name: Test
+        run: dotnet test -l "console;verbosity=normal" --no-build --nologo

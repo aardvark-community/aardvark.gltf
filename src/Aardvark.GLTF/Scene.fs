@@ -66,7 +66,7 @@ type Material =
     }
 
 /// Mesh representation
-[<CustomEquality; NoComparison>]
+[<CustomEquality; NoComparison; StructuredFormatDisplay("{AsString}")>]
 type Mesh =
     {
         Name            : option<string>
@@ -136,6 +136,19 @@ type Mesh =
             
         )
     
+    member private x.AsString = x.ToString()
+    
+    override x.ToString() =
+        sprintf "{ Name = %A; BoundingBox = %s; Mode = %A; Index = %A; Positions = %A; Normals = %A; Tangents = %A; TexCoords = %A; Colors = %A }"
+            x.Name
+            (x.BoundingBox.ToString("0.0000"))
+            x.Mode
+            (x.Index |> Option.map Array.length)
+            x.Positions.Length
+            (x.Normals |> Option.map Array.length)
+            (x.Tangents |> Option.map Array.length)
+            (x.TexCoords |> List.map (fun (arr, sem) -> (arr.Length, sem)))
+            (x.Colors |> Option.map Array.length)
  
 type MeshInstance =
     {

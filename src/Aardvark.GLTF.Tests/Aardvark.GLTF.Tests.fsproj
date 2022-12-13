@@ -6,6 +6,10 @@
     <OutputPath>..\..\bin\$(Configuration)</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="data\Avocado.zip" />
+    <EmbeddedResource Include="data\Avocado.glb" />
+    <EmbeddedResource Include="data\2CylinderEngine.gltf" />
+    <Compile Include="Tests.fs" />
     <Compile Include="Program.fs" />
     <Content Include="paket.references" />
   </ItemGroup>
