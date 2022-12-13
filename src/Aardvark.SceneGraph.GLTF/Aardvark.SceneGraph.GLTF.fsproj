@@ -21,6 +21,7 @@
     <Compile Include="CubeMap.fs" />
     <Compile Include="SceneGraph.fs" />
     <None Include="paket.references" />
+    <None Include="paket.template" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Aardvark.GLTF\Aardvark.GLTF.fsproj" />

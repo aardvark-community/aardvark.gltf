@@ -8,6 +8,7 @@
         "**/Thumbs.db": true,
         "**/obj/": true,
         ".paket": true,
-        "paket-files": true
+        "paket-files": true,
+        ".idea": true
     }
 }

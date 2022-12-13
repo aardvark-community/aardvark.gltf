@@ -1,0 +1,11 @@
+type project
+id Aardvark.GLTF
+authors Aardvark Platform Team
+owners Aardvark Platform Team
+projectUrl http://github.com/aardvark-community
+licenseUrl https://mit-license.org
+repositoryType git
+repositoryUrl https://github.com/aardvark-community/aardvark.gltf
+description
+    Aardvark is an open-source platform for visual computing, real-time graphics and visualization.
+include-pdbs true

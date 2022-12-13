@@ -4,3 +4,4 @@ paket-files/
 **/obj/
 **/.DS_Store
 .idea/
+**/Aardvark.log
