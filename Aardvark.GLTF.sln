@@ -3,28 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C82DC074-C036-4635-A67F-78DBB94C6735}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Aardvark.GLTF", "src\Aardvark.GLTF\Aardvark.GLTF.fsproj", "{D9B32DDE-3B29-4902-A9A7-219601ED3540}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Aardvark.GLTF", "src\Aardvark.GLTF\Aardvark.GLTF.fsproj", "{D9B32DDE-3B29-4902-A9A7-219601ED3540}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Aardvark.GLTF.Tests", "src\Aardvark.GLTF.Tests\Aardvark.GLTF.Tests.fsproj", "{DEDB5052-CABE-491C-A7D9-3A4AD747C1B6}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Aardvark.GLTF.Tests", "src\Aardvark.GLTF.Tests\Aardvark.GLTF.Tests.fsproj", "{DEDB5052-CABE-491C-A7D9-3A4AD747C1B6}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{95A9AD7A-9374-4A8D-BF4F-5E34D37380C2}"
-	ProjectSection(SolutionItems) = preProject
-		paket.dependencies = paket.dependencies
-		RELEASE_NOTES.md = RELEASE_NOTES.md
-		publish.yml = .github\workflows\publish.yml
-	EndProjectSection
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Aardvark.SceneGraph.GLTF", "src\Aardvark.SceneGraph.GLTF\Aardvark.SceneGraph.GLTF.fsproj", "{FF2FFE58-8D52-4F70-8212-D4DD12B78C6F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Aardvark.SceneGraph.GLTF", "src\Aardvark.SceneGraph.GLTF\Aardvark.SceneGraph.GLTF.fsproj", "{FF2FFE58-8D52-4F70-8212-D4DD12B78C6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D9B32DDE-3B29-4902-A9A7-219601ED3540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -40,9 +28,7 @@ Global
 		{FF2FFE58-8D52-4F70-8212-D4DD12B78C6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF2FFE58-8D52-4F70-8212-D4DD12B78C6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{D9B32DDE-3B29-4902-A9A7-219601ED3540} = {C82DC074-C036-4635-A67F-78DBB94C6735}
-		{DEDB5052-CABE-491C-A7D9-3A4AD747C1B6} = {C82DC074-C036-4635-A67F-78DBB94C6735}
-		{FF2FFE58-8D52-4F70-8212-D4DD12B78C6F} = {C82DC074-C036-4635-A67F-78DBB94C6735}
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal

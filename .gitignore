@@ -5,3 +5,5 @@ paket-files/
 **/.DS_Store
 .idea/
 **/Aardvark.log
+**/.vs
+**/launchSettings.json

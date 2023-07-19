@@ -1,6 +1,6 @@
 namespace Aardvark.GLTF
 
-open System.Runtime.InteropServices
+open System
 open glTFLoader
 open glTFLoader.Schema
 open Aardvark.Base
@@ -215,19 +215,37 @@ module GLTF =
                     if not (isNull mat.PbrMetallicRoughness) then
                         addTexture [TextureSemantic.BaseColor] mat.PbrMetallicRoughness.BaseColorTexture
                         addTexture [TextureSemantic.Metallicness; TextureSemantic.Roughness] mat.PbrMetallicRoughness.MetallicRoughnessTexture
-                        
+
             let images =
                 if isNull model.Images || model.Images.Length = 0 then
                     [||]
                 else
                     model.Images |> Array.mapi (fun ii img ->
-                        if img.BufferView.HasValue then
+                        let data =
+                            if img.BufferView.HasValue then
+                                let view = model.BufferViews.[img.BufferView.Value]
+                                let buffer = readBuffer view.Buffer
+                                Some <| Array.sub buffer view.ByteOffset view.ByteLength
+                            else
+                                try
+                                    let uri = Uri(img.Uri, UriKind.RelativeOrAbsolute)
+
+                                    if uri.IsAbsoluteUri then
+                                        if uri.IsFile then
+                                            Some <| File.readAllBytes uri.AbsolutePath
+                                        else
+                                            Log.warn "[GLTF] Cannot read image from %A" uri.OriginalString
+                                            None
+                                    else
+                                        Some <| read img.Uri
+
+                                with e ->
+                                    Log.warn "[GLTF] Failed to read image %A: %s" img.Name e.Message
+                                    None
+
+                        data |> Option.map (fun data ->
                             let id = ImageId.New()
-                            let view = model.BufferViews.[img.BufferView.Value]
-                            let buffer = readBuffer view.Buffer
-                            
-                            let data = Array.sub buffer view.ByteOffset view.ByteLength
-                            
+
                             let mime =
                                 if img.MimeType.HasValue then
                                     match img.MimeType.Value with
@@ -236,12 +254,12 @@ module GLTF =
                                     | _ -> None
                                 else
                                     None
-                                    
+
                             let sem =
                                 match HashMap.tryFind ii imageSemantics with
                                 | Some sem -> sem
                                 | None -> HashSet.empty
-                                    
+
                             let data =
                                 {
                                     Name = if System.String.IsNullOrEmpty img.Name then None else Some img.Name
@@ -249,21 +267,11 @@ module GLTF =
                                     Data = data
                                     Semantics = sem
                                 }
-                            
-                            Some (id, data)
-                            // try
-                            //     let pimg = 
-                            //         use ms = new MemoryStream(buffer, view.ByteOffset, view.ByteLength)
-                            //         PixImage.Load(ms)
-                            //         
-                            //     Some (id, pimg)
-                            // with e ->
-                            //     Log.warn "could not load image %A (%A)" img.Name img.Uri
-                            //     None
-                        else
-                            None
+
+                            id, data
+                        )
                     )
-            
+
 
             let materials =
                 if isNull model.Materials then
