@@ -8,6 +8,7 @@ open FSharp.Data.Adaptive
 open Aardvark.Rendering
 open Microsoft.FSharp.NativeInterop
 open Aardvark.GLTF
+open System.Text.RegularExpressions
 
 #nowarn "9"
 
@@ -184,17 +185,16 @@ module GLTF =
                 None
             else
                 Some trafo
-                
+
         let toScene (read : string -> byte[]) (model : Gltf) =
-            
+
             let bufferCache = Dict<int, byte[]>()
-            
+
             let readBuffer (i : int) =
                 bufferCache.GetOrCreate(i, fun i ->
-                    model.LoadBinaryBuffer(i, read)    
+                    model.LoadBinaryBuffer(i, read)
                 )
-            
-            
+
             let mutable imageSemantics = HashMap.empty<int, HashSet<TextureSemantic>>
             let inline addTexture (sems : list<TextureSemantic>) (info : TextureInfo) =
                 if not (isNull info) then
@@ -206,7 +206,7 @@ module GLTF =
                                 | Some o -> Some ((o, sems) ||> List.fold (fun o sem -> HashSet.add sem o))
                                 | None -> Some (HashSet.ofList sems)
                             )
-                            
+
             if not (isNull model.Materials) then
                 for mat in model.Materials do
                     addTexture [TextureSemantic.Emissive] mat.EmissiveTexture
@@ -228,16 +228,23 @@ module GLTF =
                                 Some <| Array.sub buffer view.ByteOffset view.ByteLength
                             else
                                 try
-                                    let uri = Uri(img.Uri, UriKind.RelativeOrAbsolute)
+                                    let embedded = Regex.Match(img.Uri, @"data:image\/.+;base64,(?<data>.+)")
 
-                                    if uri.IsAbsoluteUri then
-                                        if uri.IsFile then
-                                            Some <| File.readAllBytes uri.AbsolutePath
-                                        else
-                                            Log.warn "[GLTF] Cannot read image from %A" uri.OriginalString
-                                            None
+                                    if embedded.Success then
+                                        let base64 = embedded.Groups.["data"].Value
+                                        Some <| Convert.FromBase64String base64
+
                                     else
-                                        Some <| read img.Uri
+                                        let uri = Uri(img.Uri, UriKind.RelativeOrAbsolute)
+
+                                        if uri.IsAbsoluteUri then
+                                            if uri.IsFile then
+                                                Some <| File.readAllBytes uri.AbsolutePath
+                                            else
+                                                Log.warn "[GLTF] Cannot read image from %A" uri.OriginalString
+                                                None
+                                        else
+                                            Some <| read img.Uri
 
                                 with e ->
                                     Log.warn "[GLTF] Failed to read image %A: %s" img.Name e.Message
